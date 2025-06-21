@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <div th:fragment="menu-content">
+    <!-- Menu Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-purple-800 mb-2">Quản lý thực đơn</h1>
+      <p class="text-purple-600">Quản lý món ăn, đồ uống và giá cả</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-gradient-to-r from-blue-100 to-blue-200 p-6 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-blue-800 mb-2">Tổng món</h3>
+            <p class="text-2xl font-bold text-blue-900" th:text="${totalMenuItems ?: 0}">0</p>
+          </div>
+          <div class="bg-blue-300 p-3 rounded-full">
+            <i data-lucide="chef-hat" class="w-8 h-8 text-blue-800"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-green-100 to-green-200 p-6 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-green-800 mb-2">Đang bán</h3>
+            <p class="text-2xl font-bold text-green-900" th:text="${activeItems ?: 0}">0</p>
+          </div>
+          <div class="bg-green-300 p-3 rounded-full">
+            <i data-lucide="check-circle" class="w-8 h-8 text-green-800"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-yellow-100 to-yellow-200 p-6 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-yellow-800 mb-2">Bản nháp</h3>
+            <p class="text-2xl font-bold text-yellow-900" th:text="${draftItems ?: 0}">0</p>
+          </div>
+          <div class="bg-yellow-300 p-3 rounded-full">
+            <i data-lucide="edit" class="w-8 h-8 text-yellow-800"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-red-100 to-red-200 p-6 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-red-800 mb-2">Hết hàng</h3>
+            <p class="text-2xl font-bold text-red-900" th:text="${outOfStockItems ?: 0}">0</p>
+          </div>
+          <div class="bg-red-300 p-3 rounded-full">
+            <i data-lucide="x-circle" class="w-8 h-8 text-red-800"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mb-6 flex flex-wrap gap-3">
+      <button
+        onclick="showAddMenuItemModal()"
+        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
+      >
+        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+        Thêm món mới
+      </button>
+      <button
+        onclick="showCategoryModal()"
+        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
+      >
+        <i data-lucide="folder-plus" class="w-4 h-4 mr-2"></i>
+        Quản lý danh mục
+      </button>
+      <button
+        onclick="bulkUpdatePrices()"
+        class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
+      >
+        <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i>
+        Cập nhật giá
+      </button>
+      <button
+        onclick="exportMenu()"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
+      >
+        <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
+        Xuất thực đơn
+      </button>
+    </div>
+
+    <!-- Search Section -->
+    <div class="mb-6 bg-purple-50 p-4 rounded-lg border border-purple-200">
+      <form method="get" action="/menu" class="flex gap-4 items-end">
+        <div class="flex-1">
+          <label class="block text-sm font-semibold text-purple-700 mb-2">
+            <i data-lucide="search" class="w-4 h-4 inline mr-1"></i>
+            Tìm kiếm món ăn:
+          </label>
+          <input
+            type="text"
+            name="search"
+            th:value="${searchKeyword}"
+            class="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors bg-white"
+            placeholder="Nhập tên món ăn..."
+          />
+        </div>
+        <div class="flex-1">
+          <label class="block text-sm font-semibold text-purple-700 mb-2">
+            <i data-lucide="filter" class="w-4 h-4 inline mr-1"></i>
+            Danh mục:
+          </label>
+          <select
+            name="category"
+            class="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors bg-white"
+          >
+            <option value="">Tất cả danh mục</option>
+            <option value="coffee">Cà phê</option>
+            <option value="tea">Trà</option>
+            <option value="juice">Nước ép</option>
+            <option value="food">Đồ ăn</option>
+            <option value="dessert">Tráng miệng</option>
+            <option value="snack">Đồ ăn nhẹ</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button
+            type="submit"
+            class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center"
+          >
+            <i data-lucide="search" class="w-4 h-4 mr-2"></i>
+            Tìm kiếm
+          </button>
+          <a
+            href="/menu"
+            class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center"
+          >
+            <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+            Làm mới
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Menu Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Coffee Card -->
+      <div class="bg-white rounded-lg shadow-md border border-purple-200 overflow-hidden hover:shadow-lg transition-shadow">
+        <div class="relative">
+          <img 
+            src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=300&h=200&fit=crop" 
+            alt="Espresso" 
+            class="w-full h-48 object-cover"
+          />
+          <div class="absolute top-2 right-2">
+            <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+              Đang bán
+            </span>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-semibold text-gray-900">Espresso</h3>
+            <div class="text-right">
+              <p class="text-lg font-bold text-purple-600">25,000₫</p>
+              <p class="text-xs text-gray-500">Giá nhập: 18,000₫</p>
+            </div>
+          </div>
+          <div class="flex items-center mb-2">
+            <span class="bg-brown-100 text-brown-800 text-xs px-2 py-1 rounded-full mr-2">
+              Cà phê
+            </span>
+            <div class="flex items-center text-yellow-500">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <span class="text-sm text-gray-600 ml-1">4.8</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mb-3">Cà phê espresso đậm đà, thơm ngon</p>
+          <div class="flex items-center justify-between">
+            <div class="flex space-x-1">
+              <button
+                onclick="editMenuItem(1)"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Sửa"
+              >
+                <i data-lucide="edit-2" class="w-3 h-3"></i>
+              </button>
+              <button
+                onclick="toggleMenuItemStatus(1)"
+                class="bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Ẩn/Hiện"
+              >
+                <i data-lucide="eye-off" class="w-3 h-3"></i>
+              </button>
+              <button
+                onclick="deleteMenuItem(1)"
+                class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Xóa"
+              >
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <span class="text-xs text-gray-500">Bán: 45 ly</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tea Card -->
+      <div class="bg-white rounded-lg shadow-md border border-purple-200 overflow-hidden hover:shadow-lg transition-shadow">
+        <div class="relative">
+          <img 
+            src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300&h=200&fit=crop" 
+            alt="Trà sữa" 
+            class="w-full h-48 object-cover"
+          />
+          <div class="absolute top-2 right-2">
+            <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+              Đang bán
+            </span>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-semibold text-gray-900">Trà sữa</h3>
+            <div class="text-right">
+              <p class="text-lg font-bold text-purple-600">30,000₫</p>
+              <p class="text-xs text-gray-500">Giá nhập: 22,000₫</p>
+            </div>
+          </div>
+          <div class="flex items-center mb-2">
+            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-2">
+              Trà
+            </span>
+            <div class="flex items-center text-yellow-500">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <span class="text-sm text-gray-600 ml-1">4.6</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mb-3">Trà sữa ngọt ngào, béo ngậy</p>
+          <div class="flex items-center justify-between">
+            <div class="flex space-x-1">
+              <button
+                onclick="editMenuItem(2)"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Sửa"
+              >
+                <i data-lucide="edit-2" class="w-3 h-3"></i>
+              </button>
+              <button
+                onclick="toggleMenuItemStatus(2)"
+                class="bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Ẩn/Hiện"
+              >
+                <i data-lucide="eye-off" class="w-3 h-3"></i>
+              </button>
+              <button
+                onclick="deleteMenuItem(2)"
+                class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Xóa"
+              >
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <span class="text-xs text-gray-500">Bán: 38 ly</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Food Card -->
+      <div class="bg-white rounded-lg shadow-md border border-purple-200 overflow-hidden hover:shadow-lg transition-shadow">
+        <div class="relative">
+          <img 
+            src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop" 
+            alt="Bánh mì" 
+            class="w-full h-48 object-cover"
+          />
+          <div class="absolute top-2 right-2">
+            <span class="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
+              Hết hàng
+            </span>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-semibold text-gray-900">Bánh mì thịt nướng</h3>
+            <div class="text-right">
+              <p class="text-lg font-bold text-purple-600">15,000₫</p>
+              <p class="text-xs text-gray-500">Giá nhập: 8,000₫</p>
+            </div>
+          </div>
+          <div class="flex items-center mb-2">
+            <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full mr-2">
+              Đồ ăn
+            </span>
+            <div class="flex items-center text-yellow-500">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <span class="text-sm text-gray-600 ml-1">4.2</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mb-3">Bánh mì giòn với thịt nướng thơm ngon</p>
+          <div class="flex items-center justify-between">
+            <div class="flex space-x-1">
+              <button
+                onclick="editMenuItem(3)"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Sửa"
+              >
+                <i data-lucide="edit-2" class="w-3 h-3"></i>
+              </button>
+              <button
+                onclick="toggleMenuItemStatus(3)"
+                class="bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Ẩn/Hiện"
+              >
+                <i data-lucide="eye" class="w-3 h-3"></i>
+              </button>
+              <button
+                onclick="deleteMenuItem(3)"
+                class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Xóa"
+              >
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <span class="text-xs text-gray-500">Bán: 0 cái</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dessert Card -->
+      <div class="bg-white rounded-lg shadow-md border border-purple-200 overflow-hidden hover:shadow-lg transition-shadow">
+        <div class="relative">
+          <img 
+            src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=300&h=200&fit=crop" 
+            alt="Tiramisu" 
+            class="w-full h-48 object-cover"
+          />
+          <div class="absolute top-2 right-2">
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
+              Bản nháp
+            </span>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-semibold text-gray-900">Tiramisu</h3>
+            <div class="text-right">
+              <p class="text-lg font-bold text-purple-600">45,000₫</p>
+              <p class="text-xs text-gray-500">Giá nhập: 35,000₫</p>
+            </div>
+          </div>
+          <div class="flex items-center mb-2">
+            <span class="bg-pink-100 text-pink-800 text-xs px-2 py-1 rounded-full mr-2">
+              Tráng miệng
+            </span>
+            <div class="flex items-center text-gray-400">
+              <i data-lucide="star" class="w-4 h-4"></i>
+              <span class="text-sm text-gray-400 ml-1">Chưa có</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mb-3">Bánh tiramisu Italia truyền thống</p>
+          <div class="flex items-center justify-between">
+            <div class="flex space-x-1">
+              <button
+                onclick="editMenuItem(4)"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Sửa"
+              >
+                <i data-lucide="edit-2" class="w-3 h-3"></i>
+              </button>
+              <button
+                onclick="publishMenuItem(4)"
+                class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Xuất bản"
+              >
+                <i data-lucide="send" class="w-3 h-3"></i>
+              </button>
+              <button
+                onclick="deleteMenuItem(4)"
+                class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                title="Xóa"
+              >
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <span class="text-xs text-gray-400">Chưa bán</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Menu Item Modal -->
+    <div
+      id="add-menu-item-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+    >
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="bg-purple-600 text-white px-6 py-4 rounded-t-lg">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Thêm món mới</h3>
+            <button
+              onclick="hideAddMenuItemModal()"
+              class="text-white hover:text-gray-200 transition-colors"
+            >
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+          <form id="add-menu-item-form">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Left Column -->
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 mb-1">
+                    Tên món *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    class="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Nhập tên món ăn"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 mb-1">
+                    Danh mục *
+                  </label>
+                  <select
+                    required
+                    class="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="">Chọn danh mục</option>
+                    <option value="coffee">Cà phê</option>
+                    <option value="tea">Trà</option>
+                    <option value="juice">Nước ép</option>
+                    <option value="food">Đồ ăn</option>
+                    <option value="dessert">Tráng miệng</option>
+                    <option value="snack">Đồ ăn nhẹ</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 mb-1">
+                    Giá bán *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    class="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="25000"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 mb-1">
+                    Giá nhập
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    class="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="18000"
+                  />
+                </div>
+              </div>
+
+              <!-- Right Column -->
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 mb-1">
+                    Hình ảnh URL
+                  </label>
+                  <input
+                    type="url"
+                    class="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 mb-1">
+                    Trạng thái
+                  </label>
+                  <select
+                    class="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="active">Đang bán</option>
+                    <option value="draft">Bản nháp</option>
+                    <option value="inactive">Ngừng bán</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-purple-700 mb-1">
+                    Mô tả
+                  </label>
+                  <textarea
+                    rows="4"
+                    class="w-full px-3 py-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Mô tả món ăn..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-6 py-3 rounded-b-lg flex justify-end space-x-3">
+          <button
+            onclick="hideAddMenuItemModal()"
+            class="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+          >
+            Hủy
+          </button>
+          <button
+            onclick="addMenuItem()"
+            class="px-4 py-2 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+          >
+            Thêm món
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

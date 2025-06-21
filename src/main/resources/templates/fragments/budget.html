@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <div th:fragment="budget-content">
+    <!-- Budget Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-purple-800 mb-2">Quản lý ngân sách</h1>
+      <p class="text-purple-600">Theo dõi thu chi và quản lý ngân sách quán cà phê</p>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="mb-6 bg-white rounded-lg shadow-sm border border-purple-200 p-6">
+      <h3 class="text-lg font-semibold text-purple-800 mb-4">
+        <i data-lucide="calendar" class="w-5 h-5 inline mr-2"></i>
+        Xem thu chi
+      </h3>
+      
+      <form method="get" action="/budget" class="flex gap-4 items-end">
+        <div class="flex-1">
+          <label class="block text-sm font-semibold text-purple-700 mb-2">
+            Từ ngày:
+          </label>
+          <input
+            type="date"
+            name="fromDate"
+            id="fromDate"
+            class="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors bg-white"
+          />
+        </div>
+        
+        <div class="flex-1">
+          <label class="block text-sm font-semibold text-purple-700 mb-2">
+            Đến ngày:
+          </label>
+          <input
+            type="date"
+            name="toDate"
+            id="toDate"
+            class="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors bg-white"
+          />
+        </div>
+        
+        <div>
+          <button
+            type="submit"
+            class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center"
+          >
+            <i data-lucide="search" class="w-4 h-4 mr-2"></i>
+            Xem
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Budget Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-gradient-to-r from-green-100 to-green-200 p-6 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-green-800 mb-2">Tổng Thu</h3>
+            <p class="text-2xl font-bold text-green-900" th:text="${totalIncome != null ? #numbers.formatDecimal(totalIncome, 0, 'COMMA', 0, 'POINT') + '₫' : '0₫'}">3.000.000₫</p>
+          </div>
+          <div class="bg-green-300 p-3 rounded-full">
+            <i data-lucide="trending-up" class="w-8 h-8 text-green-800"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-red-100 to-red-200 p-6 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-red-800 mb-2">Tổng Chi</h3>
+            <p class="text-2xl font-bold text-red-900" th:text="${totalExpense != null ? #numbers.formatDecimal(totalExpense, 0, 'COMMA', 0, 'POINT') + '₫' : '0₫'}">1.600.000₫</p>
+          </div>
+          <div class="bg-red-300 p-3 rounded-full">
+            <i data-lucide="trending-down" class="w-8 h-8 text-red-800"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-blue-100 to-blue-200 p-6 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-blue-800 mb-2">Lợi nhuận</h3>
+            <p class="text-2xl font-bold text-blue-900" th:text="${profit != null ? #numbers.formatDecimal(profit, 0, 'COMMA', 0, 'POINT') + '₫' : '0₫'}">1.400.000₫</p>
+          </div>
+          <div class="bg-blue-300 p-3 rounded-full">
+            <i data-lucide="dollar-sign" class="w-8 h-8 text-blue-800"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mb-6 flex flex-wrap gap-3">
+      <button
+        onclick="showAddIncomeModal()"
+        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
+      >
+        <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i>
+        Thêm khoản thu
+      </button>
+      <button
+        onclick="showAddExpenseModal()"
+        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
+      >
+        <i data-lucide="minus-circle" class="w-4 h-4 mr-2"></i>
+        Thêm khoản chi
+      </button>
+      <button
+        onclick="exportBudgetReport()"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
+      >
+        <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
+        Xuất báo cáo
+      </button>
+    </div>
+
+    <!-- Budget Table -->
+    <div class="bg-white rounded-lg shadow-sm border border-purple-200 overflow-hidden">
+      <!-- Table Header -->
+      <div class="bg-purple-100 px-6 py-4 border-b border-purple-300">
+        <h3 class="text-lg font-semibold text-purple-800">Bảng thu chi chi tiết</h3>
+      </div>
+
+      <!-- Table Content -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-200">
+                Ngày
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-200">
+                Thu
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-200">
+                Chi
+              </th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Thao tác
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <!-- Dynamic Data Rows -->
+            <tr class="hover:bg-gray-50" th:if="${budgetData != null and !budgetData.empty}" th:each="budget : ${budgetData}">
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <div class="flex items-center">
+                  <i data-lucide="calendar" class="w-4 h-4 text-purple-500 mr-2"></i>
+                  <span class="text-sm font-medium text-gray-900" th:text="${budget.date}">23/12/2014</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <span class="text-sm font-semibold text-green-600" th:text="${budget.income != null ? #numbers.formatDecimal(budget.income, 0, 'COMMA', 0, 'POINT') + '₫' : '0₫'}">500.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <span class="text-sm font-semibold text-red-600" th:text="${budget.expense != null ? #numbers.formatDecimal(budget.expense, 0, 'COMMA', 0, 'POINT') + '₫' : '0₫'}">1.000.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <div class="flex justify-center space-x-2">
+                  <button
+                    th:onclick="'viewDayDetail(\'' + ${budget.date} + '\')'"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <i data-lucide="eye" class="w-3 h-3"></i>
+                  </button>
+                  <button
+                    th:onclick="'editDayBudget(\'' + ${budget.date} + '\')'"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                    title="Chỉnh sửa"
+                  >
+                    <i data-lucide="edit-2" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Sample Static Data (fallback) -->
+            <tr class="hover:bg-gray-50" th:if="${budgetData == null or budgetData.empty}">
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <div class="flex items-center">
+                  <i data-lucide="calendar" class="w-4 h-4 text-purple-500 mr-2"></i>
+                  <span class="text-sm font-medium text-gray-900">23/12/2014</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <span class="text-sm font-semibold text-green-600">500.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <span class="text-sm font-semibold text-red-600">1.000.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <div class="flex justify-center space-x-2">
+                  <button
+                    onclick="viewDayDetail('23/12/2014')"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <i data-lucide="eye" class="w-3 h-3"></i>
+                  </button>
+                  <button
+                    onclick="editDayBudget('23/12/2014')"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                    title="Chỉnh sửa"
+                  >
+                    <i data-lucide="edit-2" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-gray-50" th:if="${budgetData == null or budgetData.empty}">
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <div class="flex items-center">
+                  <i data-lucide="calendar" class="w-4 h-4 text-purple-500 mr-2"></i>
+                  <span class="text-sm font-medium text-gray-900">24/12/2014</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <span class="text-sm font-semibold text-green-600">1.000.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <span class="text-sm font-semibold text-red-600">200.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <div class="flex justify-center space-x-2">
+                  <button
+                    onclick="viewDayDetail('24/12/2014')"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <i data-lucide="eye" class="w-3 h-3"></i>
+                  </button>
+                  <button
+                    onclick="editDayBudget('24/12/2014')"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                    title="Chỉnh sửa"
+                  >
+                    <i data-lucide="edit-2" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-gray-50" th:if="${budgetData == null or budgetData.empty}">
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <div class="flex items-center">
+                  <i data-lucide="calendar" class="w-4 h-4 text-purple-500 mr-2"></i>
+                  <span class="text-sm font-medium text-gray-900">25/12/2014</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <span class="text-sm font-semibold text-green-600">1.500.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-gray-200">
+                <span class="text-sm font-semibold text-red-600">400.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <div class="flex justify-center space-x-2">
+                  <button
+                    onclick="viewDayDetail('25/12/2014')"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <i data-lucide="eye" class="w-3 h-3"></i>
+                  </button>
+                  <button
+                    onclick="editDayBudget('25/12/2014')"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                    title="Chỉnh sửa"
+                  >
+                    <i data-lucide="edit-2" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Total Row -->
+            <tr class="bg-purple-50 font-semibold">
+              <td class="px-6 py-4 whitespace-nowrap border-r border-purple-200">
+                <div class="flex items-center">
+                  <i data-lucide="calculator" class="w-4 h-4 text-purple-600 mr-2"></i>
+                  <span class="text-sm font-bold text-purple-800">Tổng</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-purple-200">
+                <span class="text-sm font-bold text-green-700" th:text="${totalIncome != null ? #numbers.formatDecimal(totalIncome, 0, 'COMMA', 0, 'POINT') + '₫' : '3.000.000₫'}">3.000.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-r border-purple-200">
+                <span class="text-sm font-bold text-red-700" th:text="${totalExpense != null ? #numbers.formatDecimal(totalExpense, 0, 'COMMA', 0, 'POINT') + '₫' : '1.600.000₫'}">1.600.000₫</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <span class="text-sm font-bold text-purple-800" th:text="'Lãi: ' + ${profit != null ? #numbers.formatDecimal(profit, 0, 'COMMA', 0, 'POINT') + '₫' : '1.400.000₫'}">Lãi: 1.400.000₫</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add Income Modal -->
+    <div
+      id="add-income-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+    >
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <!-- Modal Header -->
+        <div class="bg-green-600 text-white px-6 py-4 rounded-t-lg">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">
+              <i data-lucide="plus-circle" class="w-5 h-5 inline mr-2"></i>
+              Thêm khoản thu
+            </h3>
+            <button
+              onclick="hideAddIncomeModal()"
+              class="text-white hover:text-gray-200 transition-colors"
+            >
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+          <form id="add-income-form">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Ngày thu *
+                </label>
+                <input
+                  type="date"
+                  id="income-date"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Số tiền *
+                </label>
+                <input
+                  type="number"
+                  id="income-amount"
+                  required
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="500000"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Loại thu nhập
+                </label>
+                <select
+                  id="income-type"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="sales">Bán hàng</option>
+                  <option value="other">Khác</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Ghi chú
+                </label>
+                <textarea
+                  id="income-note"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Ghi chú về khoản thu..."
+                ></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-6 py-3 rounded-b-lg flex justify-end space-x-3">
+          <button
+            onclick="hideAddIncomeModal()"
+            class="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+          >
+            Hủy
+          </button>
+          <button
+            onclick="addIncome()"
+            class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+          >
+            Thêm khoản thu
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div
+      id="add-expense-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+    >
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <!-- Modal Header -->
+        <div class="bg-red-600 text-white px-6 py-4 rounded-t-lg">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">
+              <i data-lucide="minus-circle" class="w-5 h-5 inline mr-2"></i>
+              Thêm khoản chi
+            </h3>
+            <button
+              onclick="hideAddExpenseModal()"
+              class="text-white hover:text-gray-200 transition-colors"
+            >
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+          <form id="add-expense-form">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Ngày chi *
+                </label>
+                <input
+                  type="date"
+                  id="expense-date"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Số tiền *
+                </label>
+                <input
+                  type="number"
+                  id="expense-amount"
+                  required
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="200000"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Loại chi phí
+                </label>
+                <select
+                  id="expense-type"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="ingredients">Nguyên liệu</option>
+                  <option value="salary">Lương nhân viên</option>
+                  <option value="utilities">Tiện ích</option>
+                  <option value="equipment">Thiết bị</option>
+                  <option value="other">Khác</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Ghi chú
+                </label>
+                <textarea
+                  id="expense-note"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="Ghi chú về khoản chi..."
+                ></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-6 py-3 rounded-b-lg flex justify-end space-x-3">
+          <button
+            onclick="hideAddExpenseModal()"
+            class="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+          >
+            Hủy
+          </button>
+          <button
+            onclick="addExpense()"
+            class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          >
+            Thêm khoản chi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Set default dates when page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const threeDaysAgo = new Date(today);
+        threeDaysAgo.setDate(today.getDate() - 2);
+        
+        const fromDateInput = document.getElementById('fromDate');
+        const toDateInput = document.getElementById('toDate');
+        
+        if (fromDateInput && !fromDateInput.value) {
+          fromDateInput.value = threeDaysAgo.toISOString().split('T')[0];
+        }
+        
+        if (toDateInput && !toDateInput.value) {
+          toDateInput.value = today.toISOString().split('T')[0];
+        }
+      });
+    </script>
+  </div>
+</body>
+</html>

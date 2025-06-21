@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.springframework.org/schema/thymeleaf">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang chủ - Quản lý quán cà phê</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/ban.js}"></script>
+    <script th:src="@{/js/device.js}"></script>
+    <script th:src="@{/js/inventory.js}"></script>
+    <script th:src="@{/js/menu.js}"></script>
+    <script th:src="@{/js/budget.js}"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</head>
+
+<body class="bg-purple-50">
+<div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <div th:replace="fragments/sidebar :: sidebar"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+        <!-- Header -->
+        <div th:replace="fragments/header :: header"></div>
+
+        <!-- Dynamic Content based on activeTab -->
+        <!-- Home Tab -->
+        <div th:if="${activeTab == 'home'}" class="tab-content">
+            <div th:replace="fragments/dashboard :: dashboard-stats"></div>
+            <div th:replace="fragments/dashboard :: recent-orders"></div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div th:if="${activeTab == 'profile'}" class="tab-content">
+            <div th:replace="fragments/profile :: profile-content"></div>
+        </div>
+
+        <!-- Employees Tab -->
+        <div th:if="${activeTab == 'employees'}" class="tab-content">
+            <div th:replace="fragments/employee :: employees-content"></div>
+        </div>
+
+        <!-- Sales Tab -->
+        <div th:if="${activeTab == 'sales'}" class="tab-content">
+            <div th:replace="fragments/sales :: sales-content"></div>
+        </div>
+
+        <!-- Device content -->
+        <div th:if="${activeTab == 'device'}">
+            <div th:replace="fragments/device :: device-content"></div>
+        </div>
+
+        <!-- Inventory content - THÊM PHẦN NÀY NẾU CHƯA CÓ -->
+        <div th:if="${activeTab == 'inventory'}">
+            <div th:replace="fragments/inventory :: inventory-content"></div>
+        </div>
+
+        <!-- Menu content - THÊM PHẦN NÀY -->
+        <div th:if="${activeTab == 'menu'}">
+            <div th:replace="fragments/menu :: menu-content"></div>
+        </div>
+
+        <!-- Marketing content -->
+        <div th:if="${activeTab == 'marketing'}">
+            <div th:replace="fragments/marketing :: marketing-content"></div>
+        </div>
+
+        <!-- Budget content - THÊM PHẦN NÀY -->
+        <div th:if="${activeTab == 'budget'}">
+            <div th:replace="fragments/budget :: budget-content"></div>
+        </div>
+
+        <!-- Reports content -->
+        <div th:if="${activeTab == 'reports'}">
+            <div th:replace="fragments/reports :: reports-content"></div>
+        </div>
+
+        <!-- About Tab -->
+        <div th:if="${activeTab == 'about'}" class="tab-content">
+            <div th:replace="fragments/about :: about-content"></div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
