@@ -1,6 +1,29 @@
 // Define functions immediately - before HTML is rendered
 console.log("🚀 Defining functions...");
+document.addEventListener("DOMContentLoaded", function () {
+  const successAlert = document.querySelector(".bg-green-50");
+  const errorAlert = document.querySelector(".bg-red-50");
 
+  if (successAlert) {
+    setTimeout(() => {
+      successAlert.style.transition = "opacity 0.5s ease-out";
+      successAlert.style.opacity = "0";
+      setTimeout(() => {
+        successAlert.remove();
+      }, 500);
+    }, 5000);
+  }
+
+  if (errorAlert) {
+    setTimeout(() => {
+      errorAlert.style.transition = "opacity 0.5s ease-out";
+      errorAlert.style.opacity = "0";
+      setTimeout(() => {
+        errorAlert.remove();
+      }, 500);
+    }, 8000);
+  }
+});
 // Global variables
 let selectedTable = null;
 let selectedTableInfo = null;
@@ -38,10 +61,25 @@ function selectTable(element) {
 
   // Update button states
   const xemBanBtn = document.getElementById("xem-ban-btn");
+  const datBanBtn = document.getElementById("dat-ban-btn");
+
   if (xemBanBtn) {
     xemBanBtn.disabled = false;
     xemBanBtn.style.opacity = "1";
     xemBanBtn.style.cursor = "pointer";
+  }
+
+  // Chỉ enable nút đặt bàn nếu bàn đang rảnh
+  if (datBanBtn) {
+    if (selectedTableInfo.status.trim() === "Rảnh") {
+      datBanBtn.disabled = false;
+      datBanBtn.style.opacity = "1";
+      datBanBtn.style.cursor = "pointer";
+    } else {
+      datBanBtn.disabled = true;
+      datBanBtn.style.opacity = "0.5";
+      datBanBtn.style.cursor = "not-allowed";
+    }
   }
 }
 
@@ -177,5 +215,142 @@ function hideModal() {
     document.body.style.overflow = "";
   }
 }
+
+// Đặt bàn click function
+function datBanClick() {
+  console.log("📅 Đặt bàn clicked!");
+  if (!selectedTableInfo) {
+    alert("Vui lòng chọn một bàn trước!");
+    return;
+  }
+
+  if (selectedTableInfo.status.trim() !== "Rảnh") {
+    alert("Chỉ có thể đặt bàn khi bàn đang rảnh!");
+    return;
+  }
+
+  showDatBanModal(selectedTableInfo);
+}
+
+// Show đặt bàn modal function
+function showDatBanModal(tableInfo) {
+  console.log("📋 Showing đặt bàn modal for:", tableInfo);
+  const modal = document.getElementById("dat-ban-modal");
+  if (!modal) {
+    alert("Lỗi: Không tìm thấy modal đặt bàn!");
+    return;
+  }
+
+  try {
+    // Update modal title
+    const titleElement = document.getElementById("modal-dat-ban-title");
+    if (titleElement) {
+      titleElement.textContent = `Đặt ${tableInfo.name}`;
+    }
+
+    // Set default date to today
+    const ngayInput = document.getElementById("ngay");
+    if (ngayInput) {
+      const today = new Date().toISOString().split("T")[0];
+      ngayInput.value = today;
+    }
+
+    // Set default time to current time + 1 hour
+    const gioInput = document.getElementById("gio");
+    if (gioInput) {
+      const now = new Date();
+      now.setHours(now.getHours() + 1);
+      const timeString = now.toTimeString().slice(0, 5);
+      gioInput.value = timeString;
+    }
+
+    // Clear form
+    document.getElementById("khach-hang").value = "";
+    document.getElementById("sdt").value = "";
+
+    // Show modal
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    // Focus on first input
+    document.getElementById("khach-hang").focus();
+  } catch (error) {
+    console.error("💥 Error showing đặt bàn modal:", error);
+    alert("Lỗi hiển thị modal: " + error.message);
+  }
+}
+
+// Hide đặt bàn modal function
+function hideDatBanModal() {
+  const modal = document.getElementById("dat-ban-modal");
+  if (modal) {
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+  }
+}
+
+// Handle form submission
+document.addEventListener("DOMContentLoaded", function () {
+  const datBanForm = document.getElementById("dat-ban-form");
+  if (datBanForm) {
+    datBanForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const khachHang = document.getElementById("khach-hang").value;
+      const sdt = document.getElementById("sdt").value;
+      const ngay = document.getElementById("ngay").value;
+      const gio = document.getElementById("gio").value;
+
+      if (!khachHang || !sdt || !ngay || !gio) {
+        alert("Vui lòng điền đầy đủ thông tin!");
+        return;
+      }
+
+      // Validate phone number (basic)
+      if (!/^\d{10,11}$/.test(sdt)) {
+        alert("Số điện thoại không hợp lệ!");
+        return;
+      }
+
+      // Tạo datetime từ ngày và giờ
+      const dateTimeString = ngay + "T" + gio + ":00.000Z";
+
+      // Tạo form để submit
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "/dat-ban";
+      form.style.display = "none";
+
+      // Thêm các field
+      const fields = {
+        maBan: selectedTableInfo.id,
+        tenKhachHang: khachHang,
+        sdtKhachHang: sdt,
+        ngayGioDat: dateTimeString,
+      };
+
+      Object.keys(fields).forEach((key) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = fields[key];
+        form.appendChild(input);
+      });
+
+      // Thêm CSRF token nếu có
+      const csrfToken = document.querySelector('meta[name="_csrf"]');
+      if (csrfToken) {
+        const csrfInput = document.createElement("input");
+        csrfInput.type = "hidden";
+        csrfInput.name = "_csrf";
+        csrfInput.value = csrfToken.getAttribute("content");
+        form.appendChild(csrfInput);
+      }
+
+      document.body.appendChild(form);
+      form.submit();
+    });
+  }
+});
 
 console.log("✅ All functions defined!");

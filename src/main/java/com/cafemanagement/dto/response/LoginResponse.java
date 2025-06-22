@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponse {
+    private Integer maNhanVien;
     private String hoTen;
     private String chucVu;
     private String diaChi;

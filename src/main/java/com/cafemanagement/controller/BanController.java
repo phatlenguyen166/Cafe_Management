@@ -1,12 +1,19 @@
 package com.cafemanagement.controller;
 
+import com.cafemanagement.dto.request.ChiTietDatBanRequest;
+import com.cafemanagement.dto.response.LoginResponse;
 import com.cafemanagement.model.Ban;
 import org.springframework.ui.Model;
 import com.cafemanagement.service.BanService;
+import com.cafemanagement.service.ChiTietDatBanService;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
@@ -15,6 +22,7 @@ import java.util.List;
 public class BanController extends BaseController {
 
     private final BanService banService;
+    private final ChiTietDatBanService chiTietDatBanService;
 
     @GetMapping("/sales")
     public String sales(Model model, HttpSession session) {
@@ -54,5 +62,45 @@ public class BanController extends BaseController {
         model.addAttribute("avgOrderValue", 100000);
 
         return "home";
+    }
+
+    @PostMapping("/dat-ban")
+    public String datBan(@ModelAttribute ChiTietDatBanRequest request,
+            Model model, HttpSession session) {
+        if (!isAuthenticated(session)) {
+            return "redirect:/";
+        }
+
+        try {
+            // Lấy thông tin nhân viên từ session
+            LoginResponse userInfo = (LoginResponse) session.getAttribute("userInfo");
+            if (userInfo != null) {
+                request.setMaNhanVien(userInfo.getMaNhanVien());
+            }
+
+            // Tạo chi tiết đặt bàn
+            chiTietDatBanService.createChiTietDatBan(request);
+
+            return "redirect:/sales?success=dat-ban";
+
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "redirect:/sales?error=" + e.getMessage();
+        }
+    }
+
+    @PostMapping("/huy-dat-ban/{maBan}")
+    public String huyDatBan(@PathVariable Integer maBan, Model model, HttpSession session) {
+        if (!isAuthenticated(session)) {
+            return "redirect:/";
+        }
+
+        try {
+            chiTietDatBanService.cancelDatBan(maBan);
+            return "redirect:/sales?success=huy-dat-ban";
+
+        } catch (Exception e) {
+            return "redirect:/sales?error=" + e.getMessage();
+        }
     }
 }
