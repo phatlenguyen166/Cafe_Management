@@ -63,6 +63,7 @@ function selectTable(element) {
   const xemBanBtn = document.getElementById("xem-ban-btn");
   const datBanBtn = document.getElementById("dat-ban-btn");
   const huyBanBtn = document.getElementById("huy-ban-btn");
+  const chuyenBanBtn = document.getElementById("chuyen-ban-btn"); // ✅ Thêm nút chuyển bàn
 
   // Enable xem bàn button
   if (xemBanBtn) {
@@ -94,6 +95,19 @@ function selectTable(element) {
       huyBanBtn.disabled = true;
       huyBanBtn.style.opacity = "0.5";
       huyBanBtn.style.cursor = "not-allowed";
+    }
+  }
+
+  // ✅ THÊM: Enable chuyển bàn button only for "Đang sử dụng" tables
+  if (chuyenBanBtn) {
+    if (selectedTableInfo.status.trim() === "Đang sử dụng") {
+      chuyenBanBtn.disabled = false;
+      chuyenBanBtn.style.opacity = "1";
+      chuyenBanBtn.style.cursor = "pointer";
+    } else {
+      chuyenBanBtn.disabled = true;
+      chuyenBanBtn.style.opacity = "0.5";
+      chuyenBanBtn.style.cursor = "not-allowed";
     }
   }
 }
@@ -468,14 +482,17 @@ function confirmHuyBan() {
 // Chuyển bàn click function
 function chuyenBanClick() {
   console.log("🔄 Chuyển bàn clicked!");
+  
+  // Kiểm tra có chọn bàn không
   if (!selectedTableInfo) {
     alert("Vui lòng chọn một bàn trước!");
     return;
   }
 
-  if (selectedTableInfo.status.trim() === "Rảnh") {
-    alert("Không thể chuyển bàn trống!");
-    return;
+  // Nếu nút bị disable thì không làm gì cả
+  const chuyenBanBtn = document.getElementById("chuyen-ban-btn");
+  if (chuyenBanBtn && chuyenBanBtn.disabled) {
+    return; // Không hiển thị alert, chỉ return
   }
 
   showChuyenBanModal(selectedTableInfo);

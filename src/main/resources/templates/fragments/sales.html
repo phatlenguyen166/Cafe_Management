@@ -13,6 +13,9 @@
         <span th:if="${param.success[0] == 'huy-dat-ban'}"
           >Hủy đặt bàn thành công!</span
         >
+        <span th:if="${param.success[0] == 'chuyen-ban'}"
+          >Chuyển bàn thành công!</span
+        >
       </span>
     </div>
   </div>
@@ -149,8 +152,11 @@
             Xem bàn
           </button>
           <button
-            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
+            id="chuyen-ban-btn"
+            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onclick="chuyenBanClick()"
+            disabled
+            style="opacity: 0.5; cursor: not-allowed;"
           >
             Chuyển bàn
           </button>

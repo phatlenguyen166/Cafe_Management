@@ -30,19 +30,9 @@ public class BanServiceImpl implements BanService {
     }
 
     @Override
-    @Transactional // Thêm annotation này nếu chưa có
+    @Transactional
     public void chuyenBan(Integer maBanCu, Integer maBanMoi) {
         System.out.println("🔄 Bắt đầu chuyển bàn từ ID: " + maBanCu + " sang ID: " + maBanMoi);
-
-        // Tìm chi tiết đặt bàn của BÀN CŨ
-        ChiTietDatBan chiTietDatBanCu = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(maBanCu, false);
-
-        if (chiTietDatBanCu == null) {
-            System.err.println("❌ Không tìm thấy thông tin đặt bàn cho bàn ID: " + maBanCu);
-            throw new RuntimeException("Không tìm thấy thông tin đặt bàn cho bàn cũ!");
-        }
-
-        System.out.println("✅ Tìm thấy chi tiết đặt bàn ID: " + chiTietDatBanCu.getMaChiTietDatBan());
 
         // Lấy thông tin bàn cũ và bàn mới
         Ban banCu = banRespository.findById(maBanCu)
@@ -54,10 +44,24 @@ public class BanServiceImpl implements BanService {
         System.out.println("📍 Bàn cũ: " + banCu.getTenBan() + " (" + banCu.getTinhTrang() + ")");
         System.out.println("📍 Bàn mới: " + banMoi.getTenBan() + " (" + banMoi.getTinhTrang() + ")");
 
+        // ✅ THÊM: Kiểm tra bàn cũ phải là "Đang sử dụng"
+        if (!"Đang sử dụng".equals(banCu.getTinhTrang())) {
+            System.err.println("❌ Chỉ có thể chuyển bàn đang sử dụng: " + banCu.getTinhTrang());
+            throw new RuntimeException("Chỉ có thể chuyển bàn đang sử dụng!");
+        }
+
         // Kiểm tra bàn mới có rảnh không
         if (!"Rảnh".equals(banMoi.getTinhTrang())) {
             System.err.println("❌ Bàn mới không rảnh: " + banMoi.getTinhTrang());
             throw new RuntimeException("Bàn mới không rảnh!");
+        }
+
+        // Tìm chi tiết đặt bàn của BÀN CŨ
+        ChiTietDatBan chiTietDatBanCu = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(maBanCu, false);
+
+        if (chiTietDatBanCu == null) {
+            System.err.println("❌ Không tìm thấy thông tin đặt bàn cho bàn ID: " + maBanCu);
+            throw new RuntimeException("Không tìm thấy thông tin đặt bàn cho bàn cũ!");
         }
 
         // Chuyển chi tiết đặt bàn từ bàn cũ sang bàn mới
