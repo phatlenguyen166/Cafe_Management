@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -17,7 +18,7 @@ public class TaiKhoan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_tai_khoan", nullable = false)
-    private Integer id;
+    private Integer maTaiKhoan;
 
     @Size(max = 255)
     @Column(name = "anh")
@@ -37,10 +38,9 @@ public class TaiKhoan {
     @Column(name = "ten_dang_nhap", nullable = false, length = 50)
     private String tenDangNhap;
 
-    @OneToMany(mappedBy = "maTaiKhoan")
-    private Set<ChiTieu> chiTieus = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "taiKhoan")
+    private List<ChiTieu> chiTieus;
 
-    @OneToOne(mappedBy = "maTaiKhoan")
+    @OneToOne(mappedBy = "taiKhoan")
     private NhanVien nhanVien;
-
 }

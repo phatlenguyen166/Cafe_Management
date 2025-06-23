@@ -7,8 +7,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,7 +17,7 @@ public class HoaDon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_hoa_don", nullable = false)
-    private Integer id;
+    private Integer maHoaDon;
 
     @Column(name = "ngay_gio_tao")
     private Instant ngayGioTao;
@@ -33,12 +32,12 @@ public class HoaDon {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ma_khuyen_mai")
-    private KhuyenMai maKhuyenMai;
+    private KhuyenMai khuyenMai;
 
-    @OneToMany(mappedBy = "maHoaDon")
-    private Set<ChiTietDatBan> chiTietDatBans = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "hoaDon")
+    private List<ChiTietHoaDon> chiTietHoaDons;
 
-    @OneToMany(mappedBy = "maHoaDon")
-    private Set<ChiTietHoaDon> chiTietHoaDons = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "hoaDon")
+    private List<ChiTietDatBan> chiTietDatBans;
 
 }

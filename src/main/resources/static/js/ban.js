@@ -62,14 +62,16 @@ function selectTable(element) {
   // Update button states
   const xemBanBtn = document.getElementById("xem-ban-btn");
   const datBanBtn = document.getElementById("dat-ban-btn");
+  const huyBanBtn = document.getElementById("huy-ban-btn");
 
+  // Enable xem bàn button
   if (xemBanBtn) {
     xemBanBtn.disabled = false;
     xemBanBtn.style.opacity = "1";
     xemBanBtn.style.cursor = "pointer";
   }
 
-  // Chỉ enable nút đặt bàn nếu bàn đang rảnh
+  // Enable đặt bàn button only for "Rảnh" tables
   if (datBanBtn) {
     if (selectedTableInfo.status.trim() === "Rảnh") {
       datBanBtn.disabled = false;
@@ -79,6 +81,19 @@ function selectTable(element) {
       datBanBtn.disabled = true;
       datBanBtn.style.opacity = "0.5";
       datBanBtn.style.cursor = "not-allowed";
+    }
+  }
+
+  // Enable hủy bàn button only for "Đã đặt" tables
+  if (huyBanBtn) {
+    if (selectedTableInfo.status.trim() === "Đã đặt") {
+      huyBanBtn.disabled = false;
+      huyBanBtn.style.opacity = "1";
+      huyBanBtn.style.cursor = "pointer";
+    } else {
+      huyBanBtn.disabled = true;
+      huyBanBtn.style.opacity = "0.5";
+      huyBanBtn.style.cursor = "not-allowed";
     }
   }
 }
@@ -353,4 +368,101 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-console.log("✅ All functions defined!");
+// Hủy bàn click function
+function huyBanClick() {
+  console.log("❌ Hủy bàn clicked!");
+  if (!selectedTableInfo) {
+    alert("Vui lòng chọn một bàn trước!");
+    return;
+  }
+
+  if (selectedTableInfo.status.trim() !== "Đã đặt") {
+    alert("Chỉ có thể hủy bàn khi bàn đã được đặt!");
+    return;
+  }
+
+  showHuyBanModal(selectedTableInfo);
+}
+
+// Show hủy bàn modal function
+function showHuyBanModal(tableInfo) {
+  console.log("❌ Showing hủy bàn modal for:", tableInfo);
+  const modal = document.getElementById("huy-ban-modal");
+  if (!modal) {
+    alert("Lỗi: Không tìm thấy modal hủy bàn!");
+    return;
+  }
+
+  try {
+    // Update modal title
+    const titleElement = document.getElementById("modal-huy-ban-title");
+    if (titleElement) {
+      titleElement.textContent = `Xác nhận hủy ${tableInfo.name}`;
+    }
+
+    // Update table name
+    const tableNameElement = document.getElementById("huy-ban-table-name");
+    if (tableNameElement) {
+      tableNameElement.textContent = tableInfo.name + "?";
+    }
+
+    // Show customer info (mock data - you can replace with real data)
+    const customerInfoElement = document.getElementById(
+      "huy-ban-customer-info"
+    );
+    if (customerInfoElement) {
+      customerInfoElement.innerHTML = `
+        <div style="margin-bottom: 4px">👤 Khách hàng: <strong>Nguyễn Văn A</strong></div>
+        <div style="margin-bottom: 4px">📞 SĐT: <strong>0123456789</strong></div>
+        <div>🕐 Thời gian đặt: <strong>14:00 - 25/12/2024</strong></div>
+      `;
+    }
+
+    // Show modal
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  } catch (error) {
+    console.error("💥 Error showing hủy bàn modal:", error);
+    alert("Lỗi hiển thị modal: " + error.message);
+  }
+}
+
+// Hide hủy bàn modal function
+function hideHuyBanModal() {
+  const modal = document.getElementById("huy-ban-modal");
+  if (modal) {
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+  }
+}
+
+// Confirm hủy bàn function
+function confirmHuyBan() {
+  if (!selectedTableInfo) {
+    alert("Lỗi: Không tìm thấy thông tin bàn!");
+    return;
+  }
+
+  console.log("🔄 Confirming hủy bàn for table ID:", selectedTableInfo.id);
+
+  // Tạo form để submit
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = `/huy-dat-ban/${selectedTableInfo.id}`;
+  form.style.display = "none";
+
+  // Thêm CSRF token nếu có
+  const csrfToken = document.querySelector('meta[name="_csrf"]');
+  if (csrfToken) {
+    const csrfInput = document.createElement("input");
+    csrfInput.type = "hidden";
+    csrfInput.name = "_csrf";
+    csrfInput.value = csrfToken.getAttribute("content");
+    form.appendChild(csrfInput);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
+console.log("✅ All functions defined including hủy bàn!");

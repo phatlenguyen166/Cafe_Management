@@ -8,8 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,7 +18,7 @@ public class ThucDon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_thuc_don", nullable = false)
-    private Integer id;
+    private Integer maThucDon;
 
     @NotNull
     @Column(name = "gia_tien_hien_tai", nullable = false, precision = 18, scale = 2)
@@ -40,10 +39,9 @@ public class ThucDon {
     @Column(name = "ten_mon", nullable = false, length = 100)
     private String tenMon;
 
-    @OneToMany(mappedBy = "maThucDon")
-    private Set<ChiTietHoaDon> chiTietHoaDons = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "thucDon")
+    private List<ChiTietHoaDon> chiTietHoaDons;
 
-    @OneToMany(mappedBy = "maThucDon")
-    private Set<ChiTietThucDon> chiTietThucDons = new LinkedHashSet<>();
-
+    @OneToMany(mappedBy = "thucDon")
+    private List<ChiTietThucDon> chiTietThucDons;
 }

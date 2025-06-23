@@ -7,8 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
+
 
 @Getter
 @Setter
@@ -36,15 +36,15 @@ public class HangHoa {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ma_don_vi_tinh", nullable = false)
-    private DonViTinh maDonViTinh;
+    private DonViTinh donViTinh;
 
-    @OneToMany(mappedBy = "maHangHoa")
-    private Set<ChiTietThucDon> chiTietThucDons = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "hangHoa")
+    private List<ChiTietThucDon> chiTietThucDons;
 
-    @OneToMany(mappedBy = "maHangHoa")
-    private Set<DonNhap> donNhaps = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "hangHoa")
+    private List<DonNhap> donNhaps;
 
-    @OneToMany(mappedBy = "maHangHoa")
-    private Set<DonXuat> donXuats = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "hangHoa")
+    private List<DonXuat> donXuats;
 
 }

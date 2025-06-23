@@ -1,6 +1,5 @@
 package com.cafemanagement.service.impl;
 
-
 import com.cafemanagement.dto.request.LoginRequest;
 import com.cafemanagement.dto.response.LoginResponse;
 import com.cafemanagement.model.TaiKhoan;
@@ -27,7 +26,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         TaiKhoan taiKhoan = new TaiKhoan();
         int maxId = taiKhoanRepository.findMaxMaNhanVien();
         int newId = maxId + 1;
-        taiKhoan.setId(newId);
+        taiKhoan.setMaTaiKhoan(newId);
         // ID will be auto-generated due to @GeneratedValue annotation
         taiKhoan.setTenDangNhap(tenDangNhap);
         taiKhoan.setMatKhau(matKhau);
@@ -41,7 +40,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
 
         TaiKhoan savedTaiKhoan = taiKhoanRepository.save(taiKhoan);
 
-        System.out.println("Saved TaiKhoan with ID: " + savedTaiKhoan.getId());
+        System.out.println("Saved TaiKhoan with ID: " + savedTaiKhoan.getMaTaiKhoan());
 
         return savedTaiKhoan;
     }

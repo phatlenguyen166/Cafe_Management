@@ -19,4 +19,15 @@ public class BanServiceImpl implements BanService {
         return banRespository.findAll();
     }
 
+    @Override
+    public List<Ban> getByTrangThai(String trangThai) {
+        return banRespository.findByTinhTrang(trangThai);
+    }
+
+    @Override
+    public void chuyenBan(Integer maBanCu, Integer maBanMoi) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'chuyenBan'");
+    }
+
 }

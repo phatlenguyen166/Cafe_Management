@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class ChiTieu {
     @Id
     @Column(name = "ma_chi_tieu", nullable = false)
-    private Integer id;
+    private Integer maChiTieu;
 
     @NotNull
     @Column(name = "ngay_chi", nullable = false)
@@ -30,9 +30,7 @@ public class ChiTieu {
     @Column(name = "ten_khoan_chi", length = 100)
     private String tenKhoanChi;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ma_tai_khoan", nullable = false)
-    private TaiKhoan maTaiKhoan;
-
+    @ManyToOne
+    @JoinColumn(name = "ma_tai_khoan")
+    private TaiKhoan taiKhoan;
 }

@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -19,7 +20,7 @@ public class ThietBi {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_thiet_bi", nullable = false)
-    private Integer id;
+    private Integer maThietBi;
 
     @NotNull
     @Column(name = "don_gia_mua", nullable = false, precision = 18, scale = 2)
@@ -42,7 +43,6 @@ public class ThietBi {
     @Column(name = "ten_thiet_bi", nullable = false, length = 100)
     private String tenThietBi;
 
-    @OneToMany(mappedBy = "maThietBi")
-    private Set<DonNhap> donNhaps = new LinkedHashSet<>();
-
+    @OneToMany(mappedBy = "thietBi")
+    private List<DonNhap> donNhaps;
 }

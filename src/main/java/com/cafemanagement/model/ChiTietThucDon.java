@@ -16,7 +16,7 @@ public class ChiTietThucDon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_chi_tiet_thuc_don", nullable = false)
-    private Integer id;
+    private Integer maChiTietThucDon;
 
     @Size(max = 50)
     @Column(name = "don_vi_tinh", length = 50)
@@ -26,14 +26,12 @@ public class ChiTietThucDon {
     @Column(name = "khoi_luong", nullable = false, precision = 18, scale = 2)
     private BigDecimal khoiLuong;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ma_hang_hoa", nullable = false)
-    private HangHoa maHangHoa;
+    @ManyToOne
+    @JoinColumn(name = "ma_thuc_don")
+    private ThucDon thucDon;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ma_thuc_don", nullable = false)
-    private ThucDon maThucDon;
+    @ManyToOne
+    @JoinColumn(name = "ma_hang_hoa")
+    private HangHoa hangHoa;
 
 }

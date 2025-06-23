@@ -6,8 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,7 +16,7 @@ public class Ban {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_ban", nullable = false)
-    private Integer id;
+    private Integer maBan;
 
     @Size(max = 50)
     @NotNull
@@ -29,7 +28,7 @@ public class Ban {
     @Column(name = "tinh_trang", nullable = false, length = 50)
     private String tinhTrang;
 
-    @OneToMany(mappedBy = "maBan")
-    private Set<ChiTietDatBan> chiTietDatBans = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "ban", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ChiTietDatBan> chiTietDatBans;
 
 }

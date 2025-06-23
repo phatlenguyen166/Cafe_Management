@@ -16,7 +16,7 @@ public class DonNhap {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_don_nhap", nullable = false)
-    private Integer id;
+    private Integer maDonNhap;
 
     @NotNull
     @Column(name = "ngay_nhap", nullable = false)
@@ -30,19 +30,16 @@ public class DonNhap {
     @Column(name = "tong_tien", nullable = false, precision = 18, scale = 2)
     private BigDecimal tongTien;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ma_hang_hoa", nullable = false)
-    private HangHoa maHangHoa;
+    @ManyToOne
+    @JoinColumn(name = "ma_nhan_vien")
+    private NhanVien nhanVien;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ma_nhan_vien", nullable = false)
-    private NhanVien maNhanVien;
+    @ManyToOne
+    @JoinColumn(name = "ma_hang_hoa")
+    private HangHoa hangHoa;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ma_thiet_bi", nullable = false)
-    private ThietBi maThietBi;
+    @ManyToOne
+    @JoinColumn(name = "ma_thiet_bi")
+    private ThietBi thietBi;
 
 }

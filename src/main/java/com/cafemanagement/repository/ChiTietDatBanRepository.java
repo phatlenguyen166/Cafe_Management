@@ -11,9 +11,7 @@ import java.util.List;
 @Repository
 public interface ChiTietDatBanRepository extends JpaRepository<ChiTietDatBan, Integer> {
 
-    List<ChiTietDatBan> findByMaBanId(Integer maBan);
-
-    List<ChiTietDatBan> findByMaHoaDonId(Integer maHoaDon);
+    ChiTietDatBan findByBanMaBanAndHoaDonIsNull(Integer maBanId);
 
     @Query("SELECT c FROM ChiTietDatBan c WHERE c.sdtKhachHang = :sdt")
     List<ChiTietDatBan> findByCustomerPhone(@Param("sdt") String sdt);

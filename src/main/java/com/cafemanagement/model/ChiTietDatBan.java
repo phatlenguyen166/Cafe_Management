@@ -16,7 +16,7 @@ public class ChiTietDatBan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_chi_tiet_dat_ban", nullable = false)
-    private Integer id;
+    private Integer maChiTietDatBan;
 
     @Column(name = "ngay_gio_dat")
     private Instant ngayGioDat;
@@ -30,18 +30,16 @@ public class ChiTietDatBan {
     @Column(name = "ten_khach_hang", nullable = false, length = 100)
     private String tenKhachHang;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ma_ban", nullable = false)
-    private Ban maBan;
+    @ManyToOne
+    @JoinColumn(name = "ma_ban")
+    private Ban ban;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "ma_hoa_don")
-    private HoaDon maHoaDon;
+    private HoaDon hoaDon;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ma_nhan_vien", nullable = false)
-    private NhanVien maNhanVien;
+    @ManyToOne
+    @JoinColumn(name = "ma_nhan_vien")
+    private NhanVien nhanVien;
 
 }

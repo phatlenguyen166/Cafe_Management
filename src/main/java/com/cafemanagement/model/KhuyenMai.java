@@ -8,8 +8,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,7 +18,7 @@ public class KhuyenMai {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_khuyen_mai", nullable = false)
-    private Integer id;
+    private Integer maKhuyenMai;
 
     @NotNull
     @Column(name = "gia_tri_giam", nullable = false, precision = 18, scale = 2)
@@ -51,7 +50,7 @@ public class KhuyenMai {
     @Column(name = "trang_thai", nullable = false)
     private Boolean trangThai = false;
 
-    @OneToMany(mappedBy = "maKhuyenMai")
-    private Set<HoaDon> hoaDons = new LinkedHashSet<>();
+    @OneToMany(mappedBy = "khuyenMai")
+    private List<HoaDon> hoaDons;
 
 }

@@ -62,30 +62,30 @@ public class NhanVienServiceImpl implements NhanVienService {
                 taiKhoan = taiKhoanService.createTaiKhoan(
                         request.getTenDangNhap().trim(),
                         request.getMatKhau().trim());
-                System.out.println("Account created with ID: " + taiKhoan.getId());
+                System.out.println("Account created with ID: " + taiKhoan.getMaTaiKhoan());
             }
 
             int maxId = nhanVienRepository.findMaxMaNhanVien();
             int newId = maxId + 1;
 
             NhanVien nhanVien = new NhanVien();
-            nhanVien.setId(newId); // Giả sử ID được tạo ngẫu nhiên, có thể thay đổi theo logic của
+            nhanVien.setMaNhanVien(newId); // Giả sử ID được tạo ngẫu nhiên, có thể thay đổi theo logic của
             // bạn
             nhanVien.setHoTen(request.getHoTen().trim());
             nhanVien.setDiaChi(request.getDiaChi());
             nhanVien.setSoDienThoai(request.getSoDienThoai());
-            nhanVien.setMaChucVu(chucVu);
+            nhanVien.setChucVu(chucVu);
             nhanVien.setIsDeleted(false);
 
             // Set tài khoản nếu có
             if (taiKhoan != null) {
-                nhanVien.setMaTaiKhoan(taiKhoan);
+                nhanVien.setTaiKhoan(taiKhoan);
             }
 
             // 5. Lưu nhân viên
             System.out.println("Saving employee: " + nhanVien.getHoTen());
             NhanVien savedNhanVien = nhanVienRepository.save(nhanVien);
-            System.out.println("Employee saved with ID: " + savedNhanVien.getId());
+            System.out.println("Employee saved with ID: " + savedNhanVien.getMaNhanVien());
 
         } catch (Exception e) {
             System.err.println("Error adding employee: " + e.getMessage());
@@ -131,7 +131,7 @@ public class NhanVienServiceImpl implements NhanVienService {
             // 4. Cập nhật chức vụ
             ChucVu chucVu = chucVuRepository.findById(request.getMaChucVu())
                     .orElseThrow(() -> new RuntimeException("Chức vụ không tồn tại!"));
-            nhanVien.setMaChucVu(chucVu);
+            nhanVien.setChucVu(chucVu);
 
             // 5. Xử lý cập nhật thông tin tài khoản
             updateTaiKhoanInfo(nhanVien, request);
@@ -158,7 +158,7 @@ public class NhanVienServiceImpl implements NhanVienService {
             return;
         }
 
-        TaiKhoan taiKhoan = nhanVien.getMaTaiKhoan();
+        TaiKhoan taiKhoan = nhanVien.getTaiKhoan();
 
         if (taiKhoan != null) {
             // Cập nhật tài khoản hiện tại
@@ -203,7 +203,7 @@ public class NhanVienServiceImpl implements NhanVienService {
                         request.getTenDangNhap().trim(),
                         password);
 
-                nhanVien.setMaTaiKhoan(newTaiKhoan);
+                nhanVien.setTaiKhoan(newTaiKhoan);
                 System.out.println("Created new account: " + newTaiKhoan.getTenDangNhap());
             }
         }
@@ -234,4 +234,3 @@ public class NhanVienServiceImpl implements NhanVienService {
         }
     }
 }
-

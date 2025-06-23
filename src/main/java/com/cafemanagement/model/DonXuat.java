@@ -16,7 +16,7 @@ public class DonXuat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ma_don_xuat", nullable = false)
-    private Integer id;
+    private Integer maDonXuat;
 
     @NotNull
     @Column(name = "ngay_xuat", nullable = false)
@@ -33,11 +33,11 @@ public class DonXuat {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ma_hang_hoa", nullable = false)
-    private HangHoa maHangHoa;
+    private HangHoa hangHoa;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ma_nhan_vien", nullable = false)
-    private NhanVien maNhanVien;
+    private NhanVien nhanVien;
 
 }
