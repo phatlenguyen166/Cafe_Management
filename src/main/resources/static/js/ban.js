@@ -465,4 +465,176 @@ function confirmHuyBan() {
   form.submit();
 }
 
+// Chuyển bàn click function
+function chuyenBanClick() {
+  console.log("🔄 Chuyển bàn clicked!");
+  if (!selectedTableInfo) {
+    alert("Vui lòng chọn một bàn trước!");
+    return;
+  }
+
+  if (selectedTableInfo.status.trim() === "Rảnh") {
+    alert("Không thể chuyển bàn trống!");
+    return;
+  }
+
+  showChuyenBanModal(selectedTableInfo);
+}
+
+// Show chuyển bàn modal function
+function showChuyenBanModal(tableInfo) {
+  console.log("🔄 Showing chuyển bàn modal for:", tableInfo);
+  const modal = document.getElementById("chuyen-ban-modal");
+  if (!modal) {
+    alert("Lỗi: Không tìm thấy modal chuyển bàn!");
+    return;
+  }
+
+  try {
+    // Update modal title
+    const titleElement = document.getElementById("modal-chuyen-ban-title");
+    if (titleElement) {
+      titleElement.textContent = `Chuyển ${tableInfo.name}`;
+    }
+
+    // Update current table display
+    const currentTableDisplay = document.getElementById(
+      "current-table-display"
+    );
+    if (currentTableDisplay) {
+      currentTableDisplay.textContent = tableInfo.name;
+    }
+
+    // Load available tables for transfer
+    loadAvailableTablesForTransfer(tableInfo.id);
+
+    // Clear form
+    document.getElementById("chuyen-ban-note").value = "";
+
+    // Show modal
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    // Focus on select
+    document.getElementById("target-table-select").focus();
+  } catch (error) {
+    console.error("💥 Error showing chuyển bàn modal:", error);
+    alert("Lỗi hiển thị modal: " + error.message);
+  }
+}
+
+// Hide chuyển bàn modal function
+function hideChuyenBanModal() {
+  const modal = document.getElementById("chuyen-ban-modal");
+  if (modal) {
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+  }
+}
+
+// Load available tables for transfer
+function loadAvailableTablesForTransfer(currentTableId) {
+  const selectElement = document.getElementById("target-table-select");
+  if (!selectElement) return;
+
+  // Clear existing options except the first one
+  selectElement.innerHTML = '<option value="">-- Chọn bàn --</option>';
+
+  // Get all table elements from the page
+  const tableElements = document.querySelectorAll(".table-item");
+
+  tableElements.forEach((tableElement) => {
+    const tableId = tableElement.getAttribute("data-table-id");
+    const tableName = tableElement.getAttribute("data-table-name");
+    const tableStatus = tableElement.getAttribute("data-table-status");
+
+    // Only add available tables (not current table and only "Rảnh" tables)
+    if (tableId !== currentTableId && tableStatus.trim() === "Rảnh") {
+      const option = document.createElement("option");
+      option.value = tableId;
+      option.textContent = tableName;
+      selectElement.appendChild(option);
+    }
+  });
+
+  // Check if no available tables
+  if (selectElement.children.length === 1) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Không có bàn trống";
+    option.disabled = true;
+    selectElement.appendChild(option);
+  }
+}
+
+// Handle chuyển bàn form submission
+document.addEventListener("DOMContentLoaded", function () {
+  const chuyenBanForm = document.getElementById("chuyen-ban-form");
+  if (chuyenBanForm) {
+    chuyenBanForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const targetTableId = document.getElementById(
+        "target-table-select"
+      ).value;
+      const note = document.getElementById("chuyen-ban-note").value;
+
+      if (!targetTableId) {
+        alert("Vui lòng chọn bàn cần chuyển đến!");
+        return;
+      }
+
+      if (!selectedTableInfo) {
+        alert("Lỗi: Không tìm thấy thông tin bàn hiện tại!");
+        return;
+      }
+
+      // Confirm before transfer
+      const targetTableName = document.getElementById("target-table-select")
+        .options[document.getElementById("target-table-select").selectedIndex]
+        .textContent;
+
+      if (
+        confirm(
+          `Bạn có chắc chắn muốn chuyển từ ${selectedTableInfo.name} sang ${targetTableName}?`
+        )
+      ) {
+        // Create form to submit
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "/chuyen-ban";
+        form.style.display = "none";
+
+        // Add form fields - SỬA TÊN PARAMETER ĐỂ KHỚP VỚI CONTROLLER
+        const fields = {
+          maBanCu: selectedTableInfo.id, // ✅ Sửa từ fromTableId
+          maBanMoi: targetTableId, // ✅ Sửa từ toTableId
+          note: note,
+        };
+
+        Object.keys(fields).forEach((key) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = fields[key];
+          form.appendChild(input);
+        });
+
+        // Add CSRF token if exists
+        const csrfToken = document.querySelector('meta[name="_csrf"]');
+        if (csrfToken) {
+          const csrfInput = document.createElement("input");
+          csrfInput.type = "hidden";
+          csrfInput.name = "_csrf";
+          csrfInput.value = csrfToken.getAttribute("content");
+          form.appendChild(csrfInput);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  }
+});
+
 console.log("✅ All functions defined including hủy bàn!");

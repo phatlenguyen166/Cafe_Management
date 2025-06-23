@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -100,6 +101,44 @@ public class BanController extends BaseController {
             return "redirect:/sales?success=huy-dat-ban";
 
         } catch (Exception e) {
+            return "redirect:/sales?error=" + e.getMessage();
+        }
+    }
+
+    @PostMapping("/chuyen-ban")
+    public String chuyenBan(@RequestParam Integer maBanCu,
+            @RequestParam Integer maBanMoi,
+            @RequestParam(required = false) String note,
+            HttpSession session) {
+        if (!isAuthenticated(session)) {
+            return "redirect:/";
+        }
+
+        try {
+            // Validation
+            if (maBanCu == null || maBanMoi == null) {
+                throw new RuntimeException("Thiếu thông tin bàn!");
+            }
+
+            if (maBanCu.equals(maBanMoi)) {
+                throw new RuntimeException("Không thể chuyển bàn cùng một bàn!");
+            }
+
+            // Log thông tin chuyển bàn
+            System.out.println("🔄 Chuyển bàn từ ID: " + maBanCu + " sang ID: " + maBanMoi);
+            if (note != null && !note.trim().isEmpty()) {
+                System.out.println("📝 Ghi chú: " + note);
+            }
+
+            // Thực hiện chuyển bàn
+            banService.chuyenBan(maBanCu, maBanMoi);
+
+            System.out.println("✅ Chuyển bàn thành công!");
+            return "redirect:/sales?success=chuyen-ban";
+
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi chuyển bàn: " + e.getMessage());
+            e.printStackTrace();
             return "redirect:/sales?error=" + e.getMessage();
         }
     }

@@ -18,4 +18,6 @@ public interface ChiTietDatBanRepository extends JpaRepository<ChiTietDatBan, In
 
     @Query("SELECT c FROM ChiTietDatBan c WHERE c.tenKhachHang LIKE %:ten%")
     List<ChiTietDatBan> findByCustomerName(@Param("ten") String ten);
+
+    ChiTietDatBan findByBanMaBanAndHoaDonTrangThai(Integer maBanId, Boolean trangThaiHoaDon);
 }
