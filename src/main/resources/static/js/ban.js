@@ -482,7 +482,7 @@ function confirmHuyBan() {
 // Chuyển bàn click function
 function chuyenBanClick() {
   console.log("🔄 Chuyển bàn clicked!");
-  
+
   // Kiểm tra có chọn bàn không
   if (!selectedTableInfo) {
     alert("Vui lòng chọn một bàn trước!");
